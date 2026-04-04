@@ -67,8 +67,14 @@ pip install -e .
 ## Run
 
 ```bash
+# 1. Generate sample data (required before first pipeline run)
+python scripts/generate_sample_data.py
+
+# 2. Run the full pipeline
+make pipeline
+
+# Other commands
 make install    # Install dependencies
-make pipeline   # Run full pipeline
 make run        # Generate report only
 make test       # Run tests
 make notebook   # Launch Jupyter
