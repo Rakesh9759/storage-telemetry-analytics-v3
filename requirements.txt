@@ -7,3 +7,6 @@ pyarrow
 pyyaml
 python-dotenv
 pytest
+matplotlib
+seaborn
+jupyter
