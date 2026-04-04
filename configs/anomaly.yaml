@@ -1,0 +1,10 @@
+rolling_window: 5
+
+zscore:
+  threshold: 3.0
+
+iqr:
+  multiplier: 1.5
+
+isolation_forest:
+  contamination: 0.05

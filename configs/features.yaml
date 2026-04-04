@@ -1,0 +1,3 @@
+features:
+  rolling_window: 5
+  percentile_windows: [50, 95, 99]
