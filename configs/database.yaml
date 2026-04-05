@@ -1,11 +1,8 @@
 database:
-  type: sqlite
-
-  sqlite_path: data/warehouse/sqlite.db
-
+  type: postgres
   postgres:
     host: localhost
     port: 5432
     db: storage_analytics
     user: postgres
-    password: changeme
+    password: Rakesh@9644

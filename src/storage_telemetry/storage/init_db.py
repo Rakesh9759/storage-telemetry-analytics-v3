@@ -13,15 +13,8 @@ def run_sql_file(path):
 
 
 def init_db():
-    db_type = load_config("database.yaml")["database"]["type"]
-
-    if db_type == "postgres":
-        prefix = "src/storage_telemetry/storage/ddl/postgres"
-    else:
-        prefix = "src/storage_telemetry/storage/ddl/sqlite"
-
+    prefix = "src/storage_telemetry/storage/ddl/postgres"
     run_sql_file(f"{prefix}_schema.sql")
     run_sql_file(f"{prefix}_curated_schema.sql")
     run_sql_file(f"{prefix}_anomaly_schema.sql")
-
     print("Database initialized.")

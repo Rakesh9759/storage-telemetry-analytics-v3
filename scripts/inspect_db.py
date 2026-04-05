@@ -1,7 +1,4 @@
-"""
-Inspect the database: list tables, row counts, and sample rows.
-Works with both SQLite and PostgreSQL backends.
-"""
+
 
 import pandas as pd
 from sqlalchemy import inspect as sa_inspect, text

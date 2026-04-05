@@ -146,6 +146,5 @@ data/
 │   ├── anomaly_events/
 │   ├── dashboard_exports/
 │   └── device_metrics/
-└── warehouse/            # SQLite database
-    └── sqlite.db
+└── warehouse/
 ```

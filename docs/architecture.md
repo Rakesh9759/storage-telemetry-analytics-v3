@@ -62,10 +62,9 @@ src/storage_telemetry/
 
 ## Storage Layer
 
-- **SQLite** (default): local warehouse at `data/warehouse/sqlite.db`
-- **PostgreSQL**: optional, configured via `configs/database.yaml`
+- **PostgreSQL**: configured via `configs/database.yaml`
 - **Parquet**: used for staging intermediate datasets under `data/staging/`
-- **SQLAlchemy**: engine factory supports both backends via `get_engine()`
+- **SQLAlchemy**: engine factory for PostgreSQL via `get_engine()`
 
 ## Configuration
 
