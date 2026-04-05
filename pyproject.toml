@@ -1,0 +1,12 @@
+[project]
+name = "storage-telemetry-analytics"
+version = "0.1.0"
+description = "Batch-first storage telemetry analytics platform"
+authors = [{name = "Rakeshchandra Mandava"}]
+requires-python = ">=3.9"
+
+[project.scripts]
+storage-telemetry = "storage_telemetry.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
