@@ -11,31 +11,27 @@ Raw iostat CSV
     │
     ▼
 ┌──────────────┐
-│  Ingestion   │  iostat_parser → schema_validator → batch_ingest
+│  Ingestion   │  scripts/generate_sample_data.py → raw_device_metrics
 └──────┬───────┘
-       │  raw_device_metrics (12 columns)
+       │  raw_device_metrics (base + extended telemetry fields)
        ▼
 ┌──────────────┐
-│  Curation    │  derive_features → build_curated_metrics → quality_checks
+│  Curation    │  pipelines/spark_transform.py (PySpark feature engineering)
 └──────┬───────┘
-       │  curated_device_metrics (23 columns)
+       │  curated_device_metrics (legacy + extended derived features)
        ▼
 ┌──────────────┐
-│  Detection   │  rolling_zscore / iqr / isolation_forest → severity → root_cause_rules → enrich
+│  Detection   │  pipelines/anomaly_detection.py (Z-score + IQR + root-cause hints)
 └──────┬───────┘
        │  anomaly_events
        ▼
 ┌──────────────────┐
-│  Exports + Marts │  dashboard_views → tableau_extracts
+│  Exports + Marts │  pipelines/build_marts.py → tableau_extracts
 └──────┬───────────┘
        │  mart_tableau_device_overview
        │  mart_tableau_anomaly_timeline
        │  mart_tableau_root_cause_summary
        │  v_grafana_device_health
-       ▼
-┌──────────────┐
-│  Timeseries  │  rolling stats, hourly aggregates, percentiles
-└──────┬───────┘
        ▼
 ┌──────────────┐
 │  Reporting   │  summary_builder → recommendations → markdown + HTML
@@ -51,13 +47,13 @@ Raw iostat CSV
 src/storage_telemetry/
 ├── core/              # Config loader, logging, constants, exceptions
 ├── storage/           # DB connection factory, SQLite/Parquet stores, repository, DDL
-├── ingestion/         # iostat parsing, schema validation, batch ingestion
+├── ingestion/         # iostat parsing and schema validation helpers
 ├── analytics/         # Workload pattern classifier (read-heavy, write-heavy, balanced, etc.)
-├── transforms/        # Feature derivation, curated metrics builder, timeseries transforms
+├── transforms/        # Reusable feature derivation and quality checks
 ├── detection/         # Anomaly detectors (z-score, IQR, Isolation Forest), severity, root cause
 ├── exports/           # Dashboard view builders, Tableau CSV extracts
 ├── reporting/         # Summary aggregation, recommendations, MD/HTML rendering
-└── cli.py             # CLI entry point with --mode dispatch
+└── cli.py             # CLI entry point (report, init-db)
 ```
 
 ## Storage Layer
@@ -81,16 +77,15 @@ All pipeline behavior is controlled by YAML files under `configs/`:
 
 ## Data Flow
 
-1. **Ingest**: Parse CSV → validate schema → write to `raw_device_metrics`
-2. **Curate**: Derive features (IOPS, throughput, ratios, saturation, pressure) → write to `curated_device_metrics`
-3. **Classify**: Assign workload pattern per row (read-heavy, write-heavy, balanced, saturated, latency-sensitive, idle)
-4. **Detect**: Run 3 detectors per metric → assign severity → apply root-cause rules → write to `anomaly_events`
-5. **Export**: Build 4 dashboard mart tables from curated + anomaly data
-6. **Timeseries**: Compute rolling means/stds, hourly aggregates, percentiles
-7. **Report**: Aggregate mart data → generate recommendations → render MD + HTML
+1. **Generate + Ingest**: Generate raw telemetry CSV and load to `raw_device_metrics`
+2. **Curate (Spark)**: Apply feature engineering in PySpark → write `curated_device_metrics`
+3. **Detect**: Score anomalies (Z-score + IQR), assign severity/root-cause hints → write `anomaly_events`
+4. **Export**: Build dashboard marts from curated + anomaly data
+5. **Validate**: Assert mart/view tables are non-empty
+6. **Report**: Aggregate mart data → generate recommendations → render MD + HTML
 
 ## Orchestration
 
-- **CLI** (`cli.py`): `--mode` flag dispatches to individual pipeline stages
-- **Makefile**: `make pipeline` runs all stages in sequence
-- **Batch script** (`scripts/run_batch_pipeline.py`): programmatic full pipeline execution
+- **Airflow DAG** (`dags/storage_telemetry_dag.py`): daily orchestration and retries
+- **Makefile**: `make pipeline` runs the Spark/Postgres path locally
+- **Pipeline scripts** (`pipelines/*.py`): transform, anomaly detection, marts, and validation stages

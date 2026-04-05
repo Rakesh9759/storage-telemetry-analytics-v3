@@ -1,0 +1,2 @@
+[console_scripts]
+storage-telemetry = storage_telemetry.cli:main

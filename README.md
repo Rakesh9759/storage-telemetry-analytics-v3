@@ -30,9 +30,9 @@ This project converts raw telemetry into **interpretable analytics outputs**.
 
 Pipeline:
 
-Raw Logs → Ingestion → Curated Metrics → Feature Engineering
-→ Anomaly Detection → Root Cause Enrichment
-→ Dashboard Marts → Reporting
+Synthetic Raw CSV → Load to Postgres (`raw_device_metrics`) → Spark Curation
+→ Anomaly Detection (`anomaly_events`) → Dashboard Marts
+→ Validation → Reporting
 
 ---
 
@@ -57,6 +57,12 @@ Raw Logs → Ingestion → Curated Metrics → Feature Engineering
 
 ## Setup
 
+Requirements:
+
+- Python 3.9+
+- PostgreSQL (required for DB-backed pipeline)
+- Java runtime (required by PySpark)
+
 ```bash
 python -m venv .venv
 .venv\Scripts\activate    # Windows
@@ -64,13 +70,16 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+Initialize database tables:
+
+```bash
+python -m storage_telemetry.cli --mode init-db
+```
+
 ## Run
 
 ```bash
-# 1. Generate sample data (required before first pipeline run)
-python scripts/generate_sample_data.py
-
-# 2. Run the full pipeline
+# Run full local pipeline (generate -> load raw -> spark -> anomaly -> marts -> report)
 make pipeline
 
 # Other commands
@@ -79,6 +88,8 @@ make run        # Generate report only
 make test       # Run tests
 make notebook   # Launch Jupyter
 ```
+
+Airflow orchestration (daily schedule) is available in `dags/storage_telemetry_dag.py`.
 
 ## Project Structure
 

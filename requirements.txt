@@ -5,8 +5,9 @@ sqlalchemy
 psycopg2-binary
 pyarrow
 pyyaml
-python-dotenv
 pytest
 matplotlib
 seaborn
 jupyter
+apache-airflow
+pyspark

@@ -11,6 +11,12 @@ CREATE TABLE IF NOT EXISTS raw_device_metrics (
     w_await REAL,
     aqu_sz REAL,
     util_pct REAL,
+    rrqm_s REAL,
+    wrqm_s REAL,
+    rareq_sz REAL,
+    wareq_sz REAL,
+    svctm REAL,
+    iowait_pct REAL,
 
     source_file TEXT,
     ingest_run_id TEXT

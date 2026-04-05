@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: storage-telemetry-analytics
+Version: 0.1.0
+Summary: Batch-first storage telemetry analytics platform
+Author: Rakeshchandra Mandava
+Requires-Python: >=3.9
