@@ -17,8 +17,12 @@ Ingested directly from parsed iostat CSV. One row per device per timestamp.
 | r_await | float | Read latency (ms) |
 | w_await | float | Write latency (ms) |
 | aqu_sz | float | Average queue size |
+| rrqm_s | float | Read merges per second |
+| wrqm_s | float | Write merges per second |
 | rareq_sz | float | Average read request size (KB) |
 | wareq_sz | float | Average write request size (KB) |
+| svctm | float | Service time (ms) |
+| iowait_pct | float | CPU iowait percentage |
 | util_pct | float | Device utilization (%) |
 
 ### curated_device_metrics
@@ -37,6 +41,16 @@ Enriched with derived features and workload classification.
 | saturation_score | float | Composite metric: util_pct + aqu_sz × latency |
 | io_intensity | float | total_iops × total_throughput_mb_s |
 | latency_pressure | float | avg_latency_ms × (1 + aqu_sz) |
+| merge_rate_total | float | rrqm_s + wrqm_s |
+| merge_efficiency | float | merge_rate_total / (total_iops + merge_rate_total) |
+| await_ratio | float | w_await / r_await |
+| svctm_await_ratio | float | svctm / avg_latency_ms |
+| queue_efficiency | float | total_iops / aqu_sz |
+| write_amplification | float | w_s / r_s |
+| iowait_pressure | float | iowait_pct × util_pct / 100 |
+| iops_total | float | Alias of total_iops |
+| throughput_mb_s | float | Alias of total_throughput_mb_s |
+| weighted_avg_latency | float | Alias of avg_latency_ms |
 | hour_of_day | int | Extracted from timestamp |
 | day_of_week | int | Extracted from timestamp |
 | workload_pattern | text | Classified: read-heavy, write-heavy, balanced, saturated, latency-sensitive, idle |
@@ -51,9 +65,9 @@ One row per detected anomaly per device per metric per timestamp.
 | timestamp | datetime | When the anomaly occurred |
 | metric_name | text | Which metric triggered (avg_latency_ms, util_pct, etc.) |
 | metric_value | float | Observed value at detection time |
-| detector_type | text | Which detector flagged it (rolling_zscore, iqr, isolation_forest) |
+| detector_type | text | Which detector flagged it (zscore, iqr, or zscore+iqr) |
 | anomaly_score | float | Detector-specific score |
-| severity | text | critical, high, medium, low |
+| severity | text | critical, high, low |
 | is_anomaly | bool | True if flagged |
 | workload_pattern | text | Workload at time of anomaly |
 | root_cause_hint | text | Human-readable root-cause explanation |
@@ -140,11 +154,9 @@ Real-time device health view with anomaly flags for Grafana panels.
 ```
 data/
 ├── raw/                  # Original ingested files (CSV)
-├── staging/              # Intermediate Parquet files
-│   └── parsed_metrics/
+├── staging/              # Reserved for intermediate files
 ├── curated/              # Exported analytical datasets
-│   ├── anomaly_events/
 │   ├── dashboard_exports/
-│   └── device_metrics/
+│   └── generated_iostat_curated.csv
 └── warehouse/
 ```

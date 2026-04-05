@@ -11,11 +11,11 @@ run:
 	$(PYTHON) -m storage_telemetry.cli --mode report
 
 pipeline:
-	$(PYTHON) -m storage_telemetry.cli --mode ingest --file data/raw/generated_iostat.csv
-	$(PYTHON) -m storage_telemetry.cli --mode curate
-	$(PYTHON) -m storage_telemetry.cli --mode detect
-	$(PYTHON) -m storage_telemetry.cli --mode export
-	$(PYTHON) -m storage_telemetry.cli --mode timeseries
+	$(PYTHON) scripts/generate_sample_data.py
+	$(PYTHON) pipelines/load_raw_to_postgres.py
+	spark-submit pipelines/spark_transform.py
+	$(PYTHON) pipelines/anomaly_detection.py
+	$(PYTHON) pipelines/build_marts.py
 	$(PYTHON) -m storage_telemetry.cli --mode report
 
 notebook:
