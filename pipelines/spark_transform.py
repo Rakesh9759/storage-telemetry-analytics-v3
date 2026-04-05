@@ -1,4 +1,4 @@
-"""Spark transform pipeline for curated storage telemetry metrics."""
+"""Spark transform pipeline for curated storage telemetry metrics (Postgres source)."""
 
 import os
 
