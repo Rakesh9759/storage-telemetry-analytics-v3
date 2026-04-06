@@ -5,4 +5,4 @@ database:
     port: 5432
     db: storage_analytics
     user: postgres
-    password: change_me
+    password: Rakesh@9644

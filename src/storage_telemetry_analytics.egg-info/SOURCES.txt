@@ -10,7 +10,6 @@ src/storage_telemetry/core/constants.py
 src/storage_telemetry/core/exceptions.py
 src/storage_telemetry/core/logging_utils.py
 src/storage_telemetry/detection/__init__.py
-src/storage_telemetry/detection/build_anomaly_events.py
 src/storage_telemetry/detection/enrich_anomaly_events.py
 src/storage_telemetry/detection/iqr_detector.py
 src/storage_telemetry/detection/isolation_forest_detector.py
@@ -24,7 +23,6 @@ src/storage_telemetry/exports/dashboard_views.py
 src/storage_telemetry/exports/quality_checks.py
 src/storage_telemetry/exports/tableau_extracts.py
 src/storage_telemetry/ingestion/__init__.py
-src/storage_telemetry/ingestion/batch_ingest.py
 src/storage_telemetry/ingestion/iostat_parser.py
 src/storage_telemetry/ingestion/schema_validator.py
 src/storage_telemetry/reporting/__init__.py
@@ -40,10 +38,7 @@ src/storage_telemetry/storage/db_store.py
 src/storage_telemetry/storage/init_db.py
 src/storage_telemetry/storage/parquet_store.py
 src/storage_telemetry/storage/repository.py
-src/storage_telemetry/storage/sqlite_store.py
 src/storage_telemetry/transforms/__init__.py
-src/storage_telemetry/transforms/build_curated_metrics.py
-src/storage_telemetry/transforms/build_timeseries.py
 src/storage_telemetry/transforms/derive_features.py
 src/storage_telemetry/transforms/quality_checks.py
 src/storage_telemetry_analytics.egg-info/PKG-INFO

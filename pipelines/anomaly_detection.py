@@ -14,7 +14,7 @@ def load_db_config(config_path: str) -> dict:
     """Load postgres config from YAML."""
     with open(config_path, "r", encoding="utf-8") as handle:
         config = yaml.safe_load(handle)
-    return config["postgres"]
+    return config.get("database", {}).get("postgres", config.get("postgres", {}))
 
 
 def fetch_curated_metrics() -> pd.DataFrame:

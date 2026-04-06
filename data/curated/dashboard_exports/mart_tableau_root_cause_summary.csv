@@ -1,58 +1,40 @@
 root_cause_hint,workload_pattern,anomaly_count,critical_count,high_count,affected_devices,avg_anomaly_score
-Joint increase in latency and queue depth suggests pressure buildup,saturated,365,152,26,5,131.6186123678871
-Composite saturation signal indicates elevated device stress,saturated,331,122,22,5,7.689495115766366
-Latency anomaly detected without clear saturation signal,saturated,115,65,7,5,48.61603272081433
-Latency spike likely driven by saturation and queue buildup,saturated,93,65,4,5,43.6258152345945
-Queue buildup likely contributing to latency pressure,saturated,154,49,18,5,7.723590287714157
-Latency degradation likely under write-heavy pressure,write_heavy,32,27,2,5,35.52854192590075
-Latency anomaly detected without clear saturation signal,balanced,165,25,8,4,6.278390126469579
-Composite saturation signal indicates elevated device stress,balanced,67,23,6,2,12.220477420757767
-Joint increase in latency and queue depth suggests pressure buildup,write_heavy,31,23,4,5,24.685857511216224
-Queue depth anomaly detected,saturated,211,18,11,5,3.3229264050020086
-Joint increase in latency and queue depth suggests pressure buildup,latency_sensitive,37,14,5,2,15.287861062803547
-Joint increase in latency and queue depth suggests pressure buildup,balanced,145,12,9,4,3.8638763564889147
-Composite saturation signal indicates elevated device stress,latency_sensitive,28,12,1,2,10.769608481685855
-Latency spike observed during read-heavy demand,read_heavy,18,12,0,4,34.72836776953826
-Joint increase in latency and queue depth suggests pressure buildup,read_heavy,15,12,0,4,29.91601828490416
-Latency anomaly detected without clear saturation signal,latency_sensitive,22,10,3,2,16.322329137567564
-Latency degradation likely under write-heavy pressure,saturated,19,9,2,1,12.02442184380682
-Composite saturation signal indicates elevated device stress,write_heavy,12,5,2,2,7.44339921523225
-High IOPS with small requests suggests random IO pressure,saturated,25,3,2,2,1.8066985691193773
-Latency anomaly detected without clear saturation signal,small_io_pressure,10,3,5,1,96.53549538543918
-IOPS anomaly indicates bursty load increase,saturated,78,2,1,3,0.5440390835992766
-Composite saturation signal indicates elevated device stress,small_io_pressure,10,2,3,1,84.81916217844592
-Joint increase in latency and queue depth suggests pressure buildup,small_io_pressure,8,2,0,1,57.38305370081236
-High IOPS with small requests suggests random IO pressure,small_io_pressure,5,2,1,3,4.322426621681862
-Latency degradation likely under write-heavy pressure,latency_sensitive,5,2,0,1,7.527541259184822
-Latency spike observed during read-heavy demand,latency_sensitive,2,2,0,2,31.46826212045211
-Latency spike observed during read-heavy demand,saturated,2,1,0,2,262.0502423161578
-IOPS anomaly indicates bursty load increase,latency_sensitive,1,1,0,1,5.83366076730433
-Multivariate anomaly aligned with saturation pattern,saturated,347,0,68,5,0.08671698187924287
-Multivariate anomaly indicates unusual joint metric behavior,balanced,73,0,19,1,0.10034390199908931
-Multivariate anomaly indicates unusual joint metric behavior,latency_sensitive,51,0,13,2,0.0895721846730974
-Queue depth anomaly detected,balanced,50,0,0,2,0.4970527161826828
-Queue depth anomaly detected,high_throughput,24,0,0,2,0.3094671703593827
-Device operating near full utilization,saturated,20,0,8,3,2.0204697372764606
-Joint increase in latency and queue depth suggests pressure buildup,burst_io,20,0,0,2,0.4785090032554845
-Multivariate anomaly aligned with write-heavy stress,write_heavy,19,0,5,2,0.0938461113350352
-Joint increase in latency and queue depth suggests pressure buildup,high_throughput,16,0,1,1,0.6477892103207007
-Multivariate anomaly indicates unusual joint metric behavior,small_io_pressure,13,0,3,1,0.10695850737213683
-Utilization anomaly detected,saturated,11,0,4,3,1.5899827519238163
-IOPS anomaly indicates bursty load increase,burst_io,10,0,2,3,1.1414846799955836
-IOPS anomaly indicates bursty load increase,write_heavy,10,0,4,3,2.144903739991853
-IOPS anomaly indicates bursty load increase,read_heavy,9,0,0,3,1.0995938879957559
-Utilization anomaly detected,balanced,9,0,0,2,0.14920453193663313
-Queue depth anomaly detected,burst_io,8,0,0,2,0.20640441506168872
-Latency anomaly detected without clear saturation signal,high_throughput,7,0,0,1,0.4919169936719025
-IOPS anomaly indicates bursty load increase,high_throughput,5,0,0,1,0.10376459000749819
-Latency anomaly detected without clear saturation signal,burst_io,5,0,0,1,0.3490522060126521
-Queue depth anomaly detected,read_heavy,5,0,0,3,0.3607800300694738
-Composite saturation signal indicates elevated device stress,high_throughput,3,0,0,1,0.1617665883733285
-High IOPS with small requests suggests random IO pressure,read_heavy,2,0,0,2,2.220776999166322
-Utilization anomaly detected,high_throughput,2,0,0,1,0.16402386107760258
-Composite saturation signal indicates elevated device stress,read_heavy,1,0,0,1,0.16736341825527412
-IOPS anomaly indicates bursty load increase,balanced,1,0,0,1,0.0268642425040315
-Multivariate anomaly aligned with read-heavy load,read_heavy,1,0,0,1,0.01134816817065154
-Queue buildup likely contributing to latency pressure,latency_sensitive,1,0,0,1,0.30002607029025924
-Queue depth anomaly detected,write_heavy,1,0,0,1,0.7423840264715219
-Utilization anomaly detected,read_heavy,1,0,0,1,0.4476196404083401
+avg_latency_ms deviated from device baseline,latency_sensitive,346,30,10,5,1.6895797570993694
+CPU I/O wait pressure indicates backend storage bottleneck,latency_sensitive,37,17,7,3,7.02722955929723
+total_iops deviated from device baseline,burst_io,96,16,7,4,3.7089154629211443
+total_throughput_mb_s deviated from device baseline,burst_io,27,16,5,4,5.924917440586832
+queue_efficiency deviated from device baseline,latency_sensitive,164,13,17,4,3.061187582988252
+Device saturation with queue buildup,latency_sensitive,90,13,7,3,3.7213188977325484
+Small random I/O pressure reducing merge effectiveness,latency_sensitive,13,12,0,2,8.276895082989032
+saturation_score deviated from device baseline,latency_sensitive,105,11,6,4,2.2363853528721327
+iowait_pressure deviated from device baseline,burst_io,233,8,9,4,2.749066975452325
+queue_efficiency deviated from device baseline,burst_io,44,8,6,2,4.070425938447056
+total_iops deviated from device baseline,small_io_pressure,25,8,1,2,4.791501128816278
+queue_efficiency deviated from device baseline,balanced,188,5,9,4,2.5942926245796216
+saturation_score deviated from device baseline,burst_io,236,4,10,3,2.6438433890014856
+total_iops deviated from device baseline,latency_sensitive,107,3,16,4,3.2392619468760184
+saturation_score deviated from device baseline,saturated,106,2,7,5,2.3737988216441543
+iowait_pressure deviated from device baseline,latency_sensitive,36,1,2,4,2.145599190692829
+queue_efficiency deviated from device baseline,small_io_pressure,30,1,9,3,3.4057220146237808
+queue_efficiency deviated from device baseline,saturated,8,1,0,2,3.1108775760040825
+saturation_score deviated from device baseline,balanced,238,0,5,4,1.883725574347858
+merge_efficiency deviated from device baseline,balanced,229,0,22,5,3.004159066629144
+iowait_pressure deviated from device baseline,balanced,126,0,0,3,1.6602987097321917
+iowait_pressure deviated from device baseline,saturated,114,0,0,3,1.6421756559243725
+avg_latency_ms deviated from device baseline,balanced,67,0,1,2,1.2193775131336242
+total_iops deviated from device baseline,saturated,44,0,0,2,2.0745432288489405
+avg_latency_ms deviated from device baseline,burst_io,34,0,16,2,3.9390222691995653
+merge_efficiency deviated from device baseline,latency_sensitive,31,0,0,1,2.8590569869397484
+iowait_pressure deviated from device baseline,small_io_pressure,21,0,1,2,2.7186652313160438
+total_throughput_mb_s deviated from device baseline,latency_sensitive,21,0,2,3,3.1844484407096565
+total_throughput_mb_s deviated from device baseline,balanced,18,0,0,3,2.9933166499233135
+saturation_score deviated from device baseline,small_io_pressure,17,0,0,3,2.450432737011213
+Device saturation with queue buildup,saturated,9,0,0,1,1.8264906404337244
+total_throughput_mb_s deviated from device baseline,saturated,9,0,0,2,2.906288394433065
+CPU I/O wait pressure indicates backend storage bottleneck,small_io_pressure,6,0,4,1,4.583233136005335
+merge_efficiency deviated from device baseline,saturated,5,0,0,2,2.6373173866727
+total_iops deviated from device baseline,balanced,5,0,0,2,2.8361803312222973
+merge_efficiency deviated from device baseline,burst_io,2,0,0,2,2.810269925247595
+CPU I/O wait pressure indicates backend storage bottleneck,saturated,1,0,0,1,2.8797300284833525
+avg_latency_ms deviated from device baseline,saturated,1,0,0,1,1.3831330548466276
+avg_latency_ms deviated from device baseline,small_io_pressure,1,0,0,1,1.5730011635972685
