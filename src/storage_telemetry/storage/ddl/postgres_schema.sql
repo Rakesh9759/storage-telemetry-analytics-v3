@@ -21,3 +21,15 @@ CREATE TABLE IF NOT EXISTS raw_device_metrics (
     source_file TEXT,
     ingest_run_id TEXT
 );
+
+CREATE INDEX IF NOT EXISTS idx_raw_device_metrics_device
+ON raw_device_metrics (device);
+
+CREATE INDEX IF NOT EXISTS idx_raw_device_metrics_timestamp
+ON raw_device_metrics (timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_raw_device_metrics_device_timestamp
+ON raw_device_metrics (device, timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_raw_device_metrics_ingest_run_id
+ON raw_device_metrics (ingest_run_id);

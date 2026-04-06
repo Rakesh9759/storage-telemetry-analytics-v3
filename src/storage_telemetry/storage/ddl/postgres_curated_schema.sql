@@ -44,3 +44,18 @@ CREATE TABLE IF NOT EXISTS curated_device_metrics (
     hour_of_day INTEGER,
     day_of_week INTEGER
 );
+
+CREATE INDEX IF NOT EXISTS idx_curated_device_metrics_device
+ON curated_device_metrics (device);
+
+CREATE INDEX IF NOT EXISTS idx_curated_device_metrics_timestamp
+ON curated_device_metrics (timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_curated_device_metrics_device_timestamp
+ON curated_device_metrics (device, timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_curated_device_metrics_workload_pattern
+ON curated_device_metrics (workload_pattern);
+
+CREATE INDEX IF NOT EXISTS idx_curated_device_metrics_ingest_run_id
+ON curated_device_metrics (ingest_run_id);

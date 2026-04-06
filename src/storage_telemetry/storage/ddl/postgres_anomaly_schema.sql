@@ -24,3 +24,21 @@ CREATE TABLE IF NOT EXISTS anomaly_events (
     saturation_score REAL,
     latency_pressure REAL
 );
+
+CREATE INDEX IF NOT EXISTS idx_anomaly_events_device
+ON anomaly_events (device);
+
+CREATE INDEX IF NOT EXISTS idx_anomaly_events_timestamp
+ON anomaly_events (timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_anomaly_events_device_timestamp
+ON anomaly_events (device, timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_anomaly_events_metric_name
+ON anomaly_events (metric_name);
+
+CREATE INDEX IF NOT EXISTS idx_anomaly_events_severity
+ON anomaly_events (severity);
+
+CREATE INDEX IF NOT EXISTS idx_anomaly_events_ingest_run_id
+ON anomaly_events (ingest_run_id);
