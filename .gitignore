@@ -5,6 +5,8 @@ __pycache__/
 dist/
 build/
 *.egg
+.pytest_cache/
+.ipynb_checkpoints/
 
 # Virtual environment
 .venv/
@@ -21,6 +23,10 @@ data/staging/**
 data/curated/**
 data/warehouse/**
 !data/**/.gitkeep
+
+# Generated report artifacts
+assets/sample_reports/*.html
+assets/sample_reports/*.md
 
 # Environment
 .env
