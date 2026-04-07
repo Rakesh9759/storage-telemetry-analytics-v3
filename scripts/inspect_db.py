@@ -10,9 +10,14 @@ def main():
     inspector = sa_inspect(engine)
 
     tables = sorted(inspector.get_table_names())
+    views = sorted(inspector.get_view_names())
     print("=== TABLES ===")
     for t in tables:
         print(f"  {t}")
+
+    print("\n=== VIEWS ===")
+    for v in views:
+        print(f"  {v}")
 
     print("\n=== ROW COUNTS ===")
     with engine.connect() as conn:
@@ -25,6 +30,7 @@ def main():
         "curated_device_metrics",
         "anomaly_events",
         "mart_tableau_device_overview",
+        "v_grafana_device_health",
     ]
     with engine.connect() as conn:
         for t in sample_tables:

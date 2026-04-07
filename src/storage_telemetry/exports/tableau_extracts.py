@@ -38,7 +38,6 @@ def export_dashboard_datasets():
     write_to_db(device_overview, "mart_tableau_device_overview", if_exists="replace")
     write_to_db(anomaly_timeline, "mart_tableau_anomaly_timeline", if_exists="replace")
     write_to_db(root_cause_summary, "mart_tableau_root_cause_summary", if_exists="replace")
-    write_to_db(grafana_health, "v_grafana_device_health", if_exists="replace")
 
     base_dir = Path("data/curated/dashboard_exports")
     base_dir.mkdir(parents=True, exist_ok=True)

@@ -10,15 +10,15 @@
     </head>
     <body>
         <h1>Storage Telemetry Investigation Summary</h1>
-        <p>Generated at: 2026-04-06T00:02:43.217674 UTC</p>
+        <p>Generated at: 2026-04-06T00:39:18.699418 UTC</p>
 
         <h2>1. Run Overview</h2>
         <p class="metric">Total devices analyzed: <strong>5</strong></p>
-        <p class="metric">Total anomalies detected: <strong>2890</strong></p>
-        <p class="metric">Critical anomalies: <strong>169</strong></p>
-        <p class="metric">High severity anomalies: <strong>179</strong></p>
-        <p class="metric">Average device latency: <strong>52.57 ms</strong></p>
-        <p class="metric">Average device utilization: <strong>42.86%</strong></p>
+        <p class="metric">Total anomalies detected: <strong>6332</strong></p>
+        <p class="metric">Critical anomalies: <strong>313</strong></p>
+        <p class="metric">High severity anomalies: <strong>369</strong></p>
+        <p class="metric">Average device latency: <strong>40.77 ms</strong></p>
+        <p class="metric">Average device utilization: <strong>38.67%</strong></p>
 
         <h2>2. Executive Summary</h2>
         <p>
@@ -31,13 +31,13 @@
         <ul><li><strong>balanced</strong>: 4 device(s)</li><li><strong>latency_sensitive</strong>: 1 device(s)</li></ul>
 
         <h2>4. Most Affected Devices</h2>
-        <ul><li><strong>nvme1n1</strong> — anomalies: 500, critical: 54, dominant workload: balanced, avg latency: 0.32 ms</li><li><strong>sda</strong> — anomalies: 589, critical: 51, dominant workload: balanced, avg latency: 4.38 ms</li><li><strong>dm-0</strong> — anomalies: 500, critical: 28, dominant workload: balanced, avg latency: 1.1 ms</li><li><strong>sdb</strong> — anomalies: 740, critical: 19, dominant workload: latency_sensitive, avg latency: 255.61 ms</li><li><strong>nvme0n1</strong> — anomalies: 561, critical: 17, dominant workload: balanced, avg latency: 1.43 ms</li></ul>
+        <ul><li><strong>sda</strong> — anomalies: 1345, critical: 85, dominant workload: balanced, avg latency: 2.91 ms</li><li><strong>dm-0</strong> — anomalies: 975, critical: 79, dominant workload: balanced, avg latency: 1.12 ms</li><li><strong>nvme1n1</strong> — anomalies: 1202, critical: 63, dominant workload: balanced, avg latency: 0.65 ms</li><li><strong>nvme0n1</strong> — anomalies: 1099, critical: 53, dominant workload: balanced, avg latency: 1.27 ms</li><li><strong>sdb</strong> — anomalies: 1711, critical: 33, dominant workload: latency_sensitive, avg latency: 197.9 ms</li></ul>
 
         <h2>5. Top Root-Cause Signals</h2>
-        <ul><li><strong>avg_latency_ms deviated from device baseline</strong> (workload: latency_sensitive, anomalies: 346, critical: 30)</li><li><strong>CPU I/O wait pressure indicates backend storage bottleneck</strong> (workload: latency_sensitive, anomalies: 37, critical: 17)</li><li><strong>total_iops deviated from device baseline</strong> (workload: burst_io, anomalies: 96, critical: 16)</li><li><strong>total_throughput_mb_s deviated from device baseline</strong> (workload: burst_io, anomalies: 27, critical: 16)</li><li><strong>queue_efficiency deviated from device baseline</strong> (workload: latency_sensitive, anomalies: 164, critical: 13)</li></ul>
+        <ul><li><strong>avg_latency_ms deviated from device baseline</strong> (workload: latency_sensitive, anomalies: 791, critical: 97)</li><li><strong>CPU I/O wait pressure indicates backend storage bottleneck</strong> (workload: latency_sensitive, anomalies: 270, critical: 35)</li><li><strong>queue_efficiency deviated from device baseline</strong> (workload: latency_sensitive, anomalies: 397, critical: 34)</li><li><strong>Device saturation with queue buildup</strong> (workload: latency_sensitive, anomalies: 94, critical: 19)</li><li><strong>saturation_score deviated from device baseline</strong> (workload: latency_sensitive, anomalies: 257, critical: 16)</li></ul>
 
         <h2>6. Recommended Next Checks</h2>
-        <ul><li>Review critical anomaly windows first, prioritizing devices with repeated latency and saturation signals.</li></ul>
+        <ul><li>Review critical anomaly windows first, prioritizing devices with repeated latency and saturation signals.</li><li>Correlate high-utilization and queue-depth periods with latency spikes to validate saturation-driven degradation.</li></ul>
     </body>
     </html>
     
