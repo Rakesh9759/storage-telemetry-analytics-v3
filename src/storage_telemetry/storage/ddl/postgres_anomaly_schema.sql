@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS anomaly_events (
     id SERIAL PRIMARY KEY,
     device TEXT NOT NULL,
-    timestamp TEXT NOT NULL,
+    timestamp TIMESTAMPTZ NOT NULL,
     metric_name TEXT NOT NULL,
     metric_value REAL,
     detector_type TEXT NOT NULL,

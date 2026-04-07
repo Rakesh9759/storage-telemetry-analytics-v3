@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS raw_device_metrics (
     id SERIAL PRIMARY KEY,
     device TEXT NOT NULL,
-    timestamp TEXT NOT NULL,
+    timestamp TIMESTAMPTZ NOT NULL,
 
     r_s REAL,
     w_s REAL,
