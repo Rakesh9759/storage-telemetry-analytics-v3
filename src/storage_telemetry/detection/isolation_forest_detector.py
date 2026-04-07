@@ -34,13 +34,14 @@ def detect_isolation_forest(
 
     events = []
     for _, row in flagged.iterrows():
+        anomaly_score = float(-row["iforest_score"])
         events.append({
             "device": row["device"],
             "timestamp": row["timestamp"],
             "metric_name": "multivariate",
-            "metric_value": None,
+            "metric_value": anomaly_score,
             "detector_type": "isolation_forest",
-            "anomaly_score": float(-row["iforest_score"]),
+            "anomaly_score": anomaly_score,
             "severity": None,
             "is_anomaly": 1,
             "details": f"metrics={','.join(metric_cols)}",
