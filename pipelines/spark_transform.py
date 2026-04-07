@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import yaml
 from storage_telemetry.storage.db_connection import get_engine
+from storage_telemetry.storage.db_store import write_to_db
 
 
 def load_db_config(config_path: str) -> dict:
@@ -248,6 +249,22 @@ def feature_engineering(df):
     return df
 
 
+def fetch_latest_raw_ingest_run_id() -> str | None:
+    """Return the latest ingest_run_id from raw_device_metrics based on newest row."""
+    engine = get_engine()
+    query = """
+        SELECT ingest_run_id
+        FROM raw_device_metrics
+        WHERE ingest_run_id IS NOT NULL
+        ORDER BY ctid DESC
+        LIMIT 1
+    """
+    result = pd.read_sql(query, engine)
+    if result.empty:
+        return None
+    return result.iloc[0, 0]
+
+
 def main() -> None:
     """Run Spark transform from raw_device_metrics to curated_device_metrics.
 
@@ -256,16 +273,34 @@ def main() -> None:
     db = load_db_config(os.path.join("configs", "database.yaml"))
     jdbc_url = f"jdbc:postgresql://{db['host']}:{db['port']}/{db['db']}"
     properties = {"user": db["user"], "password": db["password"], "driver": "org.postgresql.Driver"}
+    latest_ingest_run_id = fetch_latest_raw_ingest_run_id()
+
+    if latest_ingest_run_id:
+        safe_run_id = str(latest_ingest_run_id).replace("'", "''")
+        source_query = (
+            "(SELECT * FROM raw_device_metrics "
+            f"WHERE ingest_run_id = '{safe_run_id}') AS raw_device_metrics_latest"
+        )
+        pandas_query = f"SELECT * FROM raw_device_metrics WHERE ingest_run_id = '{safe_run_id}'"
+        print(f"Transform scope ingest_run_id={latest_ingest_run_id}")
+    else:
+        source_query = "raw_device_metrics"
+        pandas_query = "SELECT * FROM raw_device_metrics"
+        print("Transform scope ingest_run_id=<none>; using full raw_device_metrics table")
 
     try:
         from pyspark.sql import SparkSession
         from pyspark.sql.functions import col, dayofweek, hour, lit, to_timestamp, when
 
         spark = SparkSession.builder.appName("StorageTelemetrySpark").getOrCreate()
-        df_raw = spark.read.jdbc(url=jdbc_url, table="raw_device_metrics", properties=properties)
+        df_raw = spark.read.jdbc(url=jdbc_url, table=source_query, properties=properties)
         df_raw = ensure_columns(df_raw)
         df_curated = feature_engineering(df_raw)
-        df_curated.write.mode("overwrite").jdbc(jdbc_url, "curated_device_metrics", properties)
+        (
+            df_curated.write.mode("overwrite")
+            .option("truncate", "true")
+            .jdbc(jdbc_url, "curated_device_metrics", properties)
+        )
         spark.stop()
         print("Spark transform completed.")
         return
@@ -273,11 +308,10 @@ def main() -> None:
         print(f"Spark unavailable, using pandas fallback: {exc}")
 
     engine = get_engine()
-    raw_df = pd.read_sql("SELECT * FROM raw_device_metrics", engine)
+    raw_df = pd.read_sql(pandas_query, engine)
     raw_df = ensure_columns_pandas(raw_df)
     curated_df = feature_engineering_pandas(raw_df)
-    with engine.begin() as conn:
-        curated_df.to_sql("curated_device_metrics", conn, if_exists="replace", index=False)
+    write_to_db(curated_df, "curated_device_metrics", if_exists="replace")
     print("Pandas fallback transform completed.")
 
 

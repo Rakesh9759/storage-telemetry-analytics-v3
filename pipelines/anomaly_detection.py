@@ -7,7 +7,10 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from storage_telemetry.detection.root_cause_rules import derive_root_cause_hint
+from storage_telemetry.detection.severity import assign_severity as _assign_severity_df
 from storage_telemetry.storage.db_connection import get_engine
+from storage_telemetry.storage.db_store import write_to_db
 
 
 def load_db_config(config_path: str) -> dict:
@@ -18,36 +21,35 @@ def load_db_config(config_path: str) -> dict:
 
 
 def fetch_curated_metrics() -> pd.DataFrame:
-    """Read curated metrics from Postgres."""
+    """Read only the latest curated ingest batch from Postgres."""
     engine = get_engine()
-    return pd.read_sql("SELECT * FROM curated_device_metrics", engine)
+    latest_run = pd.read_sql(
+        """
+        SELECT ingest_run_id
+        FROM curated_device_metrics
+        WHERE ingest_run_id IS NOT NULL
+        ORDER BY ctid DESC
+        LIMIT 1
+        """,
+        engine,
+    )
+
+    if latest_run.empty:
+        print("Anomaly scope ingest_run_id=<none>; using full curated_device_metrics table")
+        return pd.read_sql("SELECT * FROM curated_device_metrics", engine)
+
+    ingest_run_id = str(latest_run.iloc[0, 0]).replace("'", "''")
+    print(f"Anomaly scope ingest_run_id={ingest_run_id}")
+    return pd.read_sql(
+        f"SELECT * FROM curated_device_metrics WHERE ingest_run_id = '{ingest_run_id}'",
+        engine,
+    )
 
 
-def assign_severity(z_score_abs: float) -> str:
-    """Map z-score magnitude to severity."""
-    if z_score_abs >= 6:
-        return "critical"
-    if z_score_abs >= 4:
-        return "high"
-    return "low"
-
-
-def root_cause_hint(metric_name: str, row: pd.Series) -> str:
-    """Generate actionable root-cause hint from metric and contextual signals."""
-    util = float(row.get("util_pct", 0) or 0)
-    queue = float(row.get("aqu_sz", 0) or 0)
-    iowait_pressure = float(row.get("iowait_pressure", 0) or 0)
-    avg_req_kb = float(row.get("avg_request_size_kb", 0) or 0)
-
-    if metric_name in {"saturation_score", "avg_latency_ms"} and util > 90 and queue > 5:
-        return "Device saturation with queue buildup"
-    if metric_name in {"merge_efficiency", "avg_latency_ms"} and avg_req_kb < 8:
-        return "Small random I/O pressure reducing merge effectiveness"
-    if metric_name == "iowait_pressure" and iowait_pressure > 20:
-        return "CPU I/O wait pressure indicates backend storage bottleneck"
-    if metric_name == "queue_efficiency" and queue > 3:
-        return "Queue depth increased while throughput efficiency degraded"
-    return f"{metric_name} deviated from device baseline"
+def _severity_for_zscore(z_score_abs: float) -> str:
+    """Map z-score magnitude to severity label via the canonical severity module."""
+    row = pd.DataFrame([{"detector_type": "rolling_zscore", "anomaly_score": z_score_abs}])
+    return _assign_severity_df(row)["severity"].iloc[0]
 
 
 def compute_anomalies(df: pd.DataFrame) -> pd.DataFrame:
@@ -97,7 +99,7 @@ def compute_anomalies(df: pd.DataFrame) -> pd.DataFrame:
                 if not (z_flag or iqr_flag):
                     continue
 
-                sev = assign_severity(z_abs)
+                sev = _severity_for_zscore(z_abs)
                 detector_type = "zscore+iqr" if (z_flag and iqr_flag) else ("zscore" if z_flag else "iqr")
 
                 details = {
@@ -125,7 +127,7 @@ def compute_anomalies(df: pd.DataFrame) -> pd.DataFrame:
                         "source_file": row.get("source_file"),
                         "ingest_run_id": row.get("ingest_run_id"),
                         "workload_pattern": row.get("workload_pattern", "balanced"),
-                        "root_cause_hint": root_cause_hint(metric, row),
+                        "root_cause_hint": derive_root_cause_hint(row.to_frame().T.assign(metric_name=metric).iloc[0]),
                         "util_pct": float(row.get("util_pct", 0) or 0),
                         "aqu_sz": float(row.get("aqu_sz", 0) or 0),
                         "avg_latency_ms": float(row.get("avg_latency_ms", 0) or 0),
@@ -144,8 +146,7 @@ def compute_anomalies(df: pd.DataFrame) -> pd.DataFrame:
 
 def write_anomalies_to_db(anomalies: pd.DataFrame) -> None:
     """Persist anomalies to Postgres anomaly_events table."""
-    engine = get_engine()
-    anomalies.to_sql("anomaly_events", engine, if_exists="replace", index=False)
+    write_to_db(anomalies, "anomaly_events", if_exists="replace")
 
 
 def main() -> None:

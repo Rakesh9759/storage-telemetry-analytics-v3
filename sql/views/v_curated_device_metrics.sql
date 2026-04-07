@@ -1,4 +1,4 @@
-CREATE VIEW IF NOT EXISTS v_curated_device_metrics AS
+CREATE OR REPLACE VIEW v_curated_device_metrics AS
 SELECT
     device,
     timestamp,
