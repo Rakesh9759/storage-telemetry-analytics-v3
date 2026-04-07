@@ -18,9 +18,17 @@ from storage_telemetry.exports.quality_checks import (
 )
 
 
-def export_dashboard_datasets():
+def export_dashboard_datasets(ingest_run_id: str | None = None):
     curated_df = read_table("curated_device_metrics")
     anomaly_df = read_table("anomaly_events")
+
+    if ingest_run_id and "ingest_run_id" in curated_df.columns:
+        curated_df = curated_df[curated_df["ingest_run_id"] == ingest_run_id].copy()
+    if ingest_run_id and "ingest_run_id" in anomaly_df.columns:
+        anomaly_df = anomaly_df[anomaly_df["ingest_run_id"] == ingest_run_id].copy()
+
+    if curated_df.empty or anomaly_df.empty:
+        raise ValueError(f"No data found for ingest_run_id={ingest_run_id}")
 
     curated_df["timestamp"] = pd.to_datetime(curated_df["timestamp"])
     anomaly_df["timestamp"] = pd.to_datetime(anomaly_df["timestamp"])
@@ -52,4 +60,7 @@ def export_dashboard_datasets():
     root_cause_summary.to_csv(base_dir / "mart_tableau_root_cause_summary.csv", index=False)
     grafana_health.to_csv(base_dir / "v_grafana_device_health.csv", index=False)
 
-    print("Dashboard datasets exported successfully.")
+    print(
+        "Dashboard datasets exported successfully"
+        + (f" for ingest_run_id={ingest_run_id}." if ingest_run_id else ".")
+    )

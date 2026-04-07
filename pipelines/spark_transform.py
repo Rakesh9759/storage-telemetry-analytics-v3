@@ -1,11 +1,20 @@
 """Spark transform pipeline for curated storage metrics (with pandas fallback)."""
 
+import argparse
 import os
 
 import pandas as pd
 import yaml
+
 from storage_telemetry.storage.db_connection import get_engine
 from storage_telemetry.storage.db_store import write_to_db
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for transform stage."""
+    parser = argparse.ArgumentParser(description="Transform raw metrics into curated metrics")
+    parser.add_argument("--ingest-run-id", default=None, help="Optional ingest run ID to process")
+    return parser.parse_args()
 
 
 def load_db_config(config_path: str) -> dict:
@@ -13,6 +22,24 @@ def load_db_config(config_path: str) -> dict:
     with open(config_path, "r", encoding="utf-8") as handle:
         config = yaml.safe_load(handle)
     return config.get("database", {}).get("postgres", config.get("postgres", {}))
+
+
+def get_latest_raw_ingest_run_id() -> str | None:
+    """Get the latest ingest_run_id present in raw_device_metrics."""
+    engine = get_engine()
+    latest = pd.read_sql(
+        """
+        SELECT ingest_run_id
+        FROM raw_device_metrics
+        WHERE ingest_run_id IS NOT NULL
+        ORDER BY ctid DESC
+        LIMIT 1
+        """,
+        engine,
+    )
+    if latest.empty:
+        return None
+    return str(latest.iloc[0, 0])
 
 
 def ensure_columns_pandas(df: pd.DataFrame) -> pd.DataFrame:
@@ -290,8 +317,6 @@ def main() -> None:
 
     try:
         from pyspark.sql import SparkSession
-        from pyspark.sql.functions import col, dayofweek, hour, lit, to_timestamp, when
-
         spark = SparkSession.builder.appName("StorageTelemetrySpark").getOrCreate()
         df_raw = spark.read.jdbc(url=jdbc_url, table=source_query, properties=properties)
         df_raw = ensure_columns(df_raw)

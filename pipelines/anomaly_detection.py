@@ -1,16 +1,23 @@
 """Anomaly detection pipeline that writes mart-compatible anomaly_events."""
 
+import argparse
 import json
 import os
 
-import numpy as np
 import pandas as pd
 import yaml
+from sqlalchemy import text
 
 from storage_telemetry.detection.root_cause_rules import derive_root_cause_hint
 from storage_telemetry.detection.severity import assign_severity as _assign_severity_df
 from storage_telemetry.storage.db_connection import get_engine
-from storage_telemetry.storage.db_store import write_to_db
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for anomaly stage."""
+    parser = argparse.ArgumentParser(description="Detect anomalies from curated metrics")
+    parser.add_argument("--ingest-run-id", default=None, help="Optional ingest run ID to process")
+    return parser.parse_args()
 
 
 def load_db_config(config_path: str) -> dict:
@@ -20,10 +27,10 @@ def load_db_config(config_path: str) -> dict:
     return config.get("database", {}).get("postgres", config.get("postgres", {}))
 
 
-def fetch_curated_metrics() -> pd.DataFrame:
-    """Read only the latest curated ingest batch from Postgres."""
+def get_latest_curated_ingest_run_id() -> str | None:
+    """Read latest ingest_run_id available in curated_device_metrics."""
     engine = get_engine()
-    latest_run = pd.read_sql(
+    latest = pd.read_sql(
         """
         SELECT ingest_run_id
         FROM curated_device_metrics
@@ -33,17 +40,20 @@ def fetch_curated_metrics() -> pd.DataFrame:
         """,
         engine,
     )
+    if latest.empty:
+        return None
+    return str(latest.iloc[0, 0])
 
-    if latest_run.empty:
-        print("Anomaly scope ingest_run_id=<none>; using full curated_device_metrics table")
+
+def fetch_curated_metrics(ingest_run_id: str | None) -> pd.DataFrame:
+    """Read curated metrics from Postgres, optionally scoped to one ingest run."""
+    engine = get_engine()
+    if not ingest_run_id:
         return pd.read_sql("SELECT * FROM curated_device_metrics", engine)
 
-    ingest_run_id = str(latest_run.iloc[0, 0]).replace("'", "''")
-    print(f"Anomaly scope ingest_run_id={ingest_run_id}")
-    return pd.read_sql(
-        f"SELECT * FROM curated_device_metrics WHERE ingest_run_id = '{ingest_run_id}'",
-        engine,
-    )
+    run_sql = ingest_run_id.replace("'", "''")
+    query = f"SELECT * FROM curated_device_metrics WHERE ingest_run_id = '{run_sql}'"
+    return pd.read_sql(query, engine)
 
 
 def _severity_for_zscore(z_score_abs: float) -> str:
@@ -69,7 +79,7 @@ def compute_anomalies(df: pd.DataFrame) -> pd.DataFrame:
     metrics = [m for m in metric_candidates if m in df.columns]
 
     if "timestamp" in df.columns:
-        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
 
     events = []
     for device, group in df.groupby("device"):
@@ -86,7 +96,7 @@ def compute_anomalies(df: pd.DataFrame) -> pd.DataFrame:
             lower = q1 - (1.5 * iqr)
             upper = q3 + (1.5 * iqr)
 
-            for idx, row in group.iterrows():
+            for _, row in group.iterrows():
                 value = pd.to_numeric(row.get(metric), errors="coerce")
                 if pd.isna(value):
                     continue
@@ -144,21 +154,39 @@ def compute_anomalies(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(events)
 
 
-def write_anomalies_to_db(anomalies: pd.DataFrame) -> None:
-    """Persist anomalies to Postgres anomaly_events table."""
-    write_to_db(anomalies, "anomaly_events", if_exists="replace")
+def write_anomalies_to_db(anomalies: pd.DataFrame, ingest_run_id: str | None) -> None:
+    """Persist anomalies to Postgres anomaly_events table in append mode."""
+    if anomalies.empty:
+        return
+
+    engine = get_engine()
+    with engine.begin() as conn:
+        if ingest_run_id:
+            conn.execute(
+                text("DELETE FROM anomaly_events WHERE ingest_run_id = :run_id"),
+                {"run_id": ingest_run_id},
+            )
+        anomalies.to_sql("anomaly_events", conn, if_exists="append", index=False)
 
 
 def main() -> None:
     """Run anomaly detection pipeline from curated metrics to anomaly events."""
     _ = load_db_config(os.path.join("configs", "database.yaml"))
-    curated = fetch_curated_metrics()
+    args = parse_args()
+    ingest_run_id = args.ingest_run_id or get_latest_curated_ingest_run_id()
+
+    if ingest_run_id:
+        print(f"Anomaly scope ingest_run_id={ingest_run_id}")
+    else:
+        print("Anomaly scope ingest_run_id=<none>; using full curated_device_metrics")
+
+    curated = fetch_curated_metrics(ingest_run_id)
     anomalies = compute_anomalies(curated)
     if anomalies.empty:
         print("No anomalies detected.")
         return
 
-    write_anomalies_to_db(anomalies)
+    write_anomalies_to_db(anomalies, ingest_run_id)
     print(f"Wrote {len(anomalies)} anomaly events.")
 
 
