@@ -24,6 +24,7 @@ def init_db():
     run_sql_file(f"{prefix}_schema.sql")
     run_sql_file(f"{prefix}_curated_schema.sql")
     run_sql_file(f"{prefix}_anomaly_schema.sql")
+    run_sql_file(f"{prefix}_marts_schema.sql")
 
     # Ensure these are true SQL views, not legacy tables from earlier runs.
     reset_relation_for_view("v_curated_device_metrics")

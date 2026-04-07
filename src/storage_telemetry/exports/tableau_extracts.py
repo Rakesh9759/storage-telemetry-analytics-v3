@@ -1,8 +1,10 @@
 from pathlib import Path
 import pandas as pd
+from sqlalchemy import text
 
 from storage_telemetry.storage.repository import read_table
 from storage_telemetry.storage.db_store import write_to_db
+from storage_telemetry.storage.db_connection import get_engine
 from storage_telemetry.storage.parquet_store import write_to_parquet
 from storage_telemetry.exports.dashboard_views import (
     build_device_overview_mart,
@@ -16,6 +18,41 @@ from storage_telemetry.exports.quality_checks import (
     validate_root_cause_summary_mart,
     validate_grafana_health_view,
 )
+
+
+def _write_run_summary(
+    ingest_run_id: str,
+    curated_df: pd.DataFrame,
+    anomaly_df: pd.DataFrame,
+) -> None:
+    """Upsert one row of run-level aggregate stats for trend monitoring."""
+    raw_rows = len(read_table("raw_device_metrics").query("ingest_run_id == @ingest_run_id"))
+    curated_rows = len(curated_df)
+    anomaly_rows = len(anomaly_df)
+    affected_devices = anomaly_df["device"].nunique() if "device" in anomaly_df.columns else 0
+    critical_anomalies = int((anomaly_df["severity"] == "critical").sum()) if "severity" in anomaly_df.columns else 0
+    high_anomalies = int((anomaly_df["severity"] == "high").sum()) if "severity" in anomaly_df.columns else 0
+    max_anomaly_score = float(anomaly_df["anomaly_score"].max()) if "anomaly_score" in anomaly_df.columns and not anomaly_df.empty else None
+
+    run_row = pd.DataFrame(
+        [
+            {
+                "ingest_run_id": ingest_run_id,
+                "raw_rows": raw_rows,
+                "curated_rows": curated_rows,
+                "anomaly_rows": anomaly_rows,
+                "affected_devices": affected_devices,
+                "critical_anomalies": critical_anomalies,
+                "high_anomalies": high_anomalies,
+                "max_anomaly_score": max_anomaly_score,
+            }
+        ]
+    )
+
+    engine = get_engine()
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM mart_run_summary WHERE ingest_run_id = :run_id"), {"run_id": ingest_run_id})
+        run_row.to_sql("mart_run_summary", conn, if_exists="append", index=False)
 
 
 def export_dashboard_datasets(ingest_run_id: str | None = None):
@@ -50,15 +87,31 @@ def export_dashboard_datasets(ingest_run_id: str | None = None):
     base_dir = Path("data/curated/dashboard_exports")
     base_dir.mkdir(parents=True, exist_ok=True)
 
+    run_suffix = ingest_run_id if ingest_run_id else "latest"
+
+    write_to_parquet(device_overview, str(base_dir / f"mart_tableau_device_overview_{run_suffix}.parquet"))
+    write_to_parquet(anomaly_timeline, str(base_dir / f"mart_tableau_anomaly_timeline_{run_suffix}.parquet"))
+    write_to_parquet(root_cause_summary, str(base_dir / f"mart_tableau_root_cause_summary_{run_suffix}.parquet"))
+    write_to_parquet(grafana_health, str(base_dir / f"v_grafana_device_health_{run_suffix}.parquet"))
+
+    # Keep legacy stable filenames for current dashboards.
     write_to_parquet(device_overview, str(base_dir / "mart_tableau_device_overview.parquet"))
     write_to_parquet(anomaly_timeline, str(base_dir / "mart_tableau_anomaly_timeline.parquet"))
     write_to_parquet(root_cause_summary, str(base_dir / "mart_tableau_root_cause_summary.parquet"))
     write_to_parquet(grafana_health, str(base_dir / "v_grafana_device_health.parquet"))
 
+    device_overview.to_csv(base_dir / f"mart_tableau_device_overview_{run_suffix}.csv", index=False)
+    anomaly_timeline.to_csv(base_dir / f"mart_tableau_anomaly_timeline_{run_suffix}.csv", index=False)
+    root_cause_summary.to_csv(base_dir / f"mart_tableau_root_cause_summary_{run_suffix}.csv", index=False)
+    grafana_health.to_csv(base_dir / f"v_grafana_device_health_{run_suffix}.csv", index=False)
+
     device_overview.to_csv(base_dir / "mart_tableau_device_overview.csv", index=False)
     anomaly_timeline.to_csv(base_dir / "mart_tableau_anomaly_timeline.csv", index=False)
     root_cause_summary.to_csv(base_dir / "mart_tableau_root_cause_summary.csv", index=False)
     grafana_health.to_csv(base_dir / "v_grafana_device_health.csv", index=False)
+
+    if ingest_run_id:
+        _write_run_summary(ingest_run_id, curated_df, anomaly_df)
 
     print(
         "Dashboard datasets exported successfully"
