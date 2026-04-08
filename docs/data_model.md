@@ -119,14 +119,18 @@ One row per anomaly event with enriched context for drilldown.
 
 ### mart_tableau_root_cause_summary
 
-Aggregated root-cause signals by workload pattern.
+Aggregated root-cause signals by workload pattern and ingest run.
 
 | Column | Type | Description |
 |--------|------|-------------|
+| ingest_run_id | text | Source ingest run for this aggregate |
 | root_cause_hint | text | Root-cause description |
 | workload_pattern | text | Associated workload |
 | anomaly_count | int | Total anomalies with this cause |
 | critical_count | int | Critical anomalies with this cause |
+| high_count | int | High anomalies with this cause |
+| affected_devices | int | Distinct devices affected by this cause |
+| avg_anomaly_score | float | Average anomaly score for this cause/workload/run |
 
 ### v_grafana_device_health
 

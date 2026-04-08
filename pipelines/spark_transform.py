@@ -297,10 +297,11 @@ def main() -> None:
 
     Falls back to pandas transform when Spark runtime is unavailable.
     """
+    args = parse_args()
     db = load_db_config(os.path.join("configs", "database.yaml"))
     jdbc_url = f"jdbc:postgresql://{db['host']}:{db['port']}/{db['db']}"
     properties = {"user": db["user"], "password": db["password"], "driver": "org.postgresql.Driver"}
-    latest_ingest_run_id = fetch_latest_raw_ingest_run_id()
+    latest_ingest_run_id = args.ingest_run_id or fetch_latest_raw_ingest_run_id()
 
     if latest_ingest_run_id:
         safe_run_id = str(latest_ingest_run_id).replace("'", "''")
@@ -321,9 +322,17 @@ def main() -> None:
         df_raw = spark.read.jdbc(url=jdbc_url, table=source_query, properties=properties)
         df_raw = ensure_columns(df_raw)
         df_curated = feature_engineering(df_raw)
+        if latest_ingest_run_id:
+            # Delete this run's existing rows before appending to avoid duplicates
+            with get_engine().begin() as conn:
+                conn.execute(
+                    __import__("sqlalchemy").text(
+                        "DELETE FROM curated_device_metrics WHERE ingest_run_id = :run_id"
+                    ),
+                    {"run_id": latest_ingest_run_id},
+                )
         (
-            df_curated.write.mode("overwrite")
-            .option("truncate", "true")
+            df_curated.write.mode("append")
             .jdbc(jdbc_url, "curated_device_metrics", properties)
         )
         spark.stop()
@@ -336,7 +345,16 @@ def main() -> None:
     raw_df = pd.read_sql(pandas_query, engine)
     raw_df = ensure_columns_pandas(raw_df)
     curated_df = feature_engineering_pandas(raw_df)
-    write_to_db(curated_df, "curated_device_metrics", if_exists="replace")
+    if latest_ingest_run_id:
+        # Delete this run's existing rows before appending to avoid duplicates
+        with engine.begin() as conn:
+            conn.execute(
+                __import__("sqlalchemy").text(
+                    "DELETE FROM curated_device_metrics WHERE ingest_run_id = :run_id"
+                ),
+                {"run_id": latest_ingest_run_id},
+            )
+    write_to_db(curated_df, "curated_device_metrics", if_exists="append")
     print("Pandas fallback transform completed.")
 
 

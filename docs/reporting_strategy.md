@@ -7,7 +7,7 @@ The reporting layer is fed from Postgres mart tables built after Spark curation 
 
 - `mart_tableau_device_overview`
 - `mart_tableau_anomaly_timeline`
-- `mart_tableau_root_cause_summary`
+- `mart_tableau_root_cause_summary` (run-scoped via `ingest_run_id`)
 - `v_grafana_device_health`
 
 

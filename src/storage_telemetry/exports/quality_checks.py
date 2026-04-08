@@ -33,6 +33,7 @@ def validate_anomaly_timeline_mart(df: pd.DataFrame):
 
 def validate_root_cause_summary_mart(df: pd.DataFrame):
     required = [
+        "ingest_run_id",
         "root_cause_hint",
         "workload_pattern",
         "anomaly_count",
@@ -40,6 +41,28 @@ def validate_root_cause_summary_mart(df: pd.DataFrame):
     missing = [c for c in required if c not in df.columns]
     if missing:
         raise ValueError(f"Missing root cause summary columns: {missing}")
+    return True
+
+
+def validate_device_run_summary_mart(df: pd.DataFrame):
+    required = [
+        "device",
+        "ingest_run_id",
+        "run_time",
+        "avg_latency_ms",
+        "avg_util_pct",
+        "avg_iops",
+        "avg_throughput_mb_s",
+        "avg_saturation_score",
+        "dominant_workload_pattern",
+        "total_anomalies",
+        "critical_count",
+        "high_count",
+        "top_root_cause",
+    ]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        raise ValueError(f"Missing device run summary columns: {missing}")
     return True
 
 

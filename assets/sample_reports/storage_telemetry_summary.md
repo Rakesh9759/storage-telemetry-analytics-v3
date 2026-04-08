@@ -1,15 +1,15 @@
 # Storage Telemetry Investigation Summary
 
-Generated at: 2026-04-07T04:09:20.668244 UTC
+Generated at: 2026-04-08T19:20:59.244243 UTC
 
 ## 1. Run Overview
 
 - Total devices analyzed: **5**
-- Total anomalies detected: **2804**
-- Critical anomalies: **272**
-- High severity anomalies: **103**
-- Average device latency: **22.23 ms**
-- Average device utilization: **28.21%**
+- Total anomalies detected: **13703**
+- Critical anomalies: **1141**
+- High severity anomalies: **563**
+- Average device latency: **46.73 ms**
+- Average device utilization: **30.8%**
 
 ## 2. Executive Summary
 
@@ -22,21 +22,20 @@ This report summarizes storage telemetry behavior across analyzed devices, with 
 
 ## 4. Most Affected Devices
 
-- **nvme0n1** — anomalies: 453, critical: 81, dominant workload: balanced, avg latency: 0.47 ms
-- **sda** — anomalies: 622, critical: 61, dominant workload: balanced, avg latency: 3.47 ms
-- **dm-0** — anomalies: 518, critical: 48, dominant workload: balanced, avg latency: 1.3 ms
-- **nvme1n1** — anomalies: 452, critical: 42, dominant workload: balanced, avg latency: 0.3 ms
-- **sdb** — anomalies: 759, critical: 40, dominant workload: latency_sensitive, avg latency: 105.59 ms
+- **sdb** — anomalies: 4208, critical: 265, dominant workload: latency_sensitive, avg latency: 229.27 ms
+- **sda** — anomalies: 2446, critical: 265, dominant workload: balanced, avg latency: 1.92 ms
+- **dm-0** — anomalies: 2584, critical: 213, dominant workload: balanced, avg latency: 1.52 ms
+- **nvme0n1** — anomalies: 2084, critical: 208, dominant workload: balanced, avg latency: 0.51 ms
+- **nvme1n1** — anomalies: 2381, critical: 190, dominant workload: balanced, avg latency: 0.41 ms
 
 ## 5. Top Root-Cause Signals
 
+- **Anomalous behavior detected** (workload: latency_sensitive, anomalies: 369, critical: 71)
+- **Anomalous behavior detected** (workload: latency_sensitive, anomalies: 284, critical: 54)
+- **Anomalous behavior detected** (workload: latency_sensitive, anomalies: 367, critical: 49)
 - **Anomalous behavior detected** (workload: latency_sensitive, anomalies: 288, critical: 47)
-- **Latency anomaly detected without clear saturation signal** (workload: latency_sensitive, anomalies: 290, critical: 36)
-- **Composite saturation signal indicates elevated device stress** (workload: saturated, anomalies: 157, critical: 31)
-- **Anomalous behavior detected** (workload: balanced, anomalies: 709, critical: 29)
-- **Composite saturation signal indicates elevated device stress** (workload: latency_sensitive, anomalies: 166, critical: 29)
+- **Anomalous behavior detected** (workload: latency_sensitive, anomalies: 306, critical: 45)
 
 ## 6. Recommended Next Checks
 
 - Review critical anomaly windows first, prioritizing devices with repeated latency and saturation signals.
-- Correlate high-utilization and queue-depth periods with latency spikes to validate saturation-driven degradation.

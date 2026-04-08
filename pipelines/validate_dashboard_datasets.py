@@ -28,8 +28,10 @@ def validate_dashboard_datasets() -> None:
         "mart_tableau_anomaly_timeline",
         "mart_tableau_device_overview",
         "mart_tableau_root_cause_summary",
+        "mart_device_run_summary",
         "mart_run_summary",
         "v_grafana_device_health",
+        "v_latest_run",
     ]
     for table_name in tables:
         cur.execute(f"SELECT COUNT(*) FROM {table_name}")
